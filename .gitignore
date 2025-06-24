@@ -31,3 +31,51 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Security Reports ###
+target/security-reports/
+dependency-check-report.html
+dependency-check-report.json
+
+### Logs ###
+*.log
+logs/
+
+### OS Generated Files ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+### Docker ###
+.dockerignore
+
+### Environment Variables ###
+.env
+.env.local
+.env.production
+
+### Maven ###
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+### Test Reports ###
+target/surefire-reports/
+target/failsafe-reports/
+target/site/
+
+### Temporary Files ###
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+### IDE Specific ###
+*.classpath
+*.project
+.settings/
+.metadata/
