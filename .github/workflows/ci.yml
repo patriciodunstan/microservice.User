@@ -31,18 +31,23 @@ jobs:
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
       
-      - name: Create security reports directory
-        run: mkdir -p target/security-reports
-
-      - name: OWASP Dependency Check
-        run: mvn org.owasp:dependency-check-maven:8.4.3:check -DfailBuildOnCVSS=9 -Dformat=HTML,JSON  -DoutputDirectory=target/security-reports
+      - name: Run OWASP Dependency Check
+        run: |
+          mvn clean install -DskipTests
+          mvn org.owasp:dependency-check-maven:8.4.3:check \
+            -DfailBuildOnCVSS=9 \
+            -Dformat=HTML,JSON \
+            -DoutputDirectory=./target/security-reports
  
       - name: Upload OWASP report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: owasp-security-report
-          path: target/security-reports/
+          path: |
+            target/security-reports/dependency-check-report.html
+            target/security-reports/dependency-check-report.json
+          retention-days: 5
 
   test:
     name: Test and Build
