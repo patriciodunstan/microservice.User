@@ -1,15 +1,11 @@
 package com.userREgisterLoginAuth.microservice.User.service;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.Date;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -108,7 +104,7 @@ class JwtServiceTest {
         // The actual validation will depend on the current time vs token expiration
         // We're testing that the method doesn't throw an exception
         assertDoesNotThrow(() -> {
-            boolean isValid = jwtService.isTokenValid(token, username);
+            jwtService.isTokenValid(token, username);
             // The result may be true or false depending on timing, but no exception should be thrown
         });
     }
