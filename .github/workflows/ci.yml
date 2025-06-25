@@ -32,8 +32,8 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: OWASP Dependency Check
-        run: mvn dependency-check:check -Psecurity-scan
-
+        run: mvn org.owasp:dependency-check-maven:8.4.3:check -DfailBuildOnCVSS=9 -Dformat=HTML,JSON  -DoutputDirectory=target/security-reports
+ 
       - name: Upload OWASP report
         uses: actions/upload-artifact@v4
         if: always()
