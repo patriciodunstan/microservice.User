@@ -12,124 +12,113 @@ env:
 
 jobs:
   security-scan:
-  name: Security Scan
-  runs-on: ubuntu-latest
-  steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK ${{ env.JAVA_VERSION }}
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: 'temurin'
+      - name: Set up JDK 
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Download OWASP Dependency Check CLI
-      run: |
-        curl -L -o dc.zip https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.7/dependency-check-9.0.7-release.zip
-        unzip dc.zip
-        chmod +x dependency-check/bin/dependency-check.sh
+      - name: Download OWASP Dependency Check CLI
+        run: |
+          curl -L -o dc.zip https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.7/dependency-check-9.0.7-release.zip
+          unzip dc.zip
+          chmod +x dependency-check/bin/dependency-check.sh
 
-    - name: Run OWASP Dependency Check
-      run: |
-        mkdir -p dependency-report
-        ./dependency-check/bin/dependency-check.sh \
-          --project "microservice-user" \
-          --scan . \
-          --format HTML \
-          --out dependency-report
+      - name: Run OWASP Dependency Check
+        run: |
+          mkdir -p dependency-report
+          ./dependency-check/bin/dependency-check.sh \
+            --project "microservice-user" \
+            --scan . \
+            --format HTML \
+            --out dependency-report
 
-    - name: Verificar si se generó el reporte
-      run: |
-        echo "Archivos en el directorio ./dependency-report:"
-        ls -l ./dependency-report
-        if [ ! -f ./dependency-report/dependency-check-report.html ]; then
-          echo "❌ No se generó el reporte de Dependency Check."
-          exit 1
-        fi
+      - name: Verificar si se generó el reporte
+        run: |
+          echo "Archivos en el directorio ./dependency-report:"
+          ls -l ./dependency-report
+          if [ ! -f ./dependency-report/dependency-check-report.html ]; then
+            echo "❌ No se generó el reporte de Dependency Check."
+            exit 1
+          fi
 
-    - name: Upload Dependency Check Results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: dependency-check-report
-        path: dependency-report/
-        if-no-files-found: error
-        retention-days: 5
-    
-    test:
-      name: Test and Build
-      runs-on: ubuntu-latest
-      needs: security-scan
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
+      - name: Upload Dependency Check Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dependency-check-report
+          path: dependency-report/
+          if-no-files-found: error
+          retention-days: 5
 
-        - name: Set up JDK ${{ env.JAVA_VERSION }}
-          uses: actions/setup-java@v4
-          with:
-            java-version: ${{ env.JAVA_VERSION }}
-            distribution: 'temurin'
-
-        - name: Cache Maven packages
-          uses: actions/cache@v4
-          with:
-            path: ~/.m2
-            key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-            restore-keys: ${{ runner.os }}-m2
-
-        - name: Run Unit Tests
-          run: mvn test -DfailIfNoTests=false
-
-        - name: Build with Maven
-          run: mvn clean package -DskipTests
-
-        - name: Upload test results
-          uses: actions/upload-artifact@v4
-          if: always()
-          with:
-            name: test-results
-            path: target/surefire-reports/
-
-        - name: Upload build artifacts
-          uses: actions/upload-artifact@v4
-          with:
-            name: build-artifacts
-            path: target/*.jar
-
-    docker-security:
-      name: Docker Security Scan
-      runs-on: ubuntu-latest
-      needs: test
-      if: github.ref == 'refs/heads/main'
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-
-        - name: Build Docker image
-          run: |
-            docker build -t microservice-user:${{ github.sha }} .
-            docker tag microservice-user:${{ github.sha }} microservice-user:latest
-
-        - name: Run Trivy vulnerability scanner
-          uses: aquasecurity/trivy-action@master
-          with:
-            image-ref: 'microservice-user:latest'
-            format: 'sarif'
-            output: 'trivy-results.sarif'
-
-        - name: Upload Trivy scan results to GitHub Security tab
-          uses: github/codeql-action/upload-sarif@v3
-          if: always()
-          with:
-            sarif_file: 'trivy-results.sarif'
-
-        - name: Upload Trivy results as artifact
-          uses: actions/upload-artifact@v4
-          if: always()
-          with:
-            name: trivy-security-report
-            path: trivy-results.sarif
+  test:
+    name: Test and Build
+    runs-on: ubuntu-latest
+    needs: security-scan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 
+      - name: Set up JDK 
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin' 
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2 
+      - name: Run Unit Tests
+        run: mvn test -DfailIfNoTests=false 
+      - name: Build with Maven
+        run: mvn clean package -DskipTests  
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: target/surefire-reports/  
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: target/*.jar
+  docker-security:
+    name: Docker Security Scan
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Build Docker image
+        run: |
+          docker build -t microservice-user:${{ github.sha }} .
+          docker tag microservice-user:${{ github.sha }} microservice-user:latest
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'microservice-user:latest'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+      - name: Upload Trivy results as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trivy-security-report
+          path: trivy-results.sarif
 
      
   notify:
