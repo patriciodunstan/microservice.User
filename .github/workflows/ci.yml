@@ -38,6 +38,7 @@ jobs:
             --scan . \
             --format HTML \
             --out dependency-report
+            --nvdApiKey "${{ secrets.NVD_API_KEY }}"
 
       - name: Verificar si se generó el reporte
         run: |
