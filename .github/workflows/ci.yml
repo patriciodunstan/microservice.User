@@ -28,8 +28,6 @@ jobs:
         run: mkdir -p dependency-report
            
       - name: OWASP Dependency Check
-        uses: actions/checkout@v4
-      - name: Depcheck Scan
         uses: dependency-check/Dependency-Check_Action@main
         id: Depcheck
         with:
