@@ -18,25 +18,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: '17'
           distribution: 'temurin'
 
       - name: Create report directory
         run: mkdir -p dependency-report
            
-      - name: OWASP Dependency Check
-        uses: dependency-check/Dependency-Check_Action@main
-        id: Depcheck
-        with:
-          project: 'microservice-user'
-          path: '.'
-          format: 'HTML'
-          out: './dependency-report'
-          args: --failOnCVSS 7.0 --enableRetired --enableExperimental
-
       - name: Download OWASP Dependency Check CLI
         run: |
           curl -L -o dc.zip https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.7/dependency-check-9.0.7-release.zip
@@ -50,7 +40,7 @@ jobs:
             --scan . \
             --format HTML \
             --out dependency-report
-      
+
       - name: Verificar si se generó el reporte
         run: |
           echo "Archivos en el directorio ./dependency-report:"
@@ -65,7 +55,7 @@ jobs:
         if: always()
         with:
           name: dependency-check-report
-          path: ${{ github.workspace }}/dependency-report
+          path: dependency-report/
           if-no-files-found: error
           retention-days: 5
 
