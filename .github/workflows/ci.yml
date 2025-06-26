@@ -23,7 +23,10 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: 'temurin'
-          
+
+      - name: Create report directory
+        run: mkdir -p dependency-report
+           
       - name: OWASP Dependency Check
         uses: actions/checkout@v4
       - name: Depcheck Scan
@@ -31,8 +34,9 @@ jobs:
         id: Depcheck
         with:
           project: 'microservice-user'
-          path: './dependency-report'
+          path: '.'
           format: 'HTML'
+          out: './dependency-report'
           args: --failOnCVSS 7.0 --enableRetired --enableExperimental
 
       - name: Upload Dependency Check Results
