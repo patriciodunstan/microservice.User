@@ -36,6 +36,13 @@ jobs:
           format: 'HTML'
           out: './dependency-report'
           args: --failOnCVSS 7.0 --enableRetired --enableExperimental
+
+      - name: Debug Dependency Report Folder
+        run: |
+          echo "Contenido de ./dependency-report:"
+          ls -la ./dependency-report || echo "No existe el directorio"
+          echo "Contenido completo del workspace:"
+          find . -type f
       
       - name: Verificar si se generó el reporte
         run: |
