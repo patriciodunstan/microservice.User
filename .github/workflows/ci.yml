@@ -31,7 +31,7 @@ jobs:
         id: Depcheck
         with:
           project: 'microservice-user'
-          path: ${{ github.workspace }}
+          path: './dependency-report'
           format: 'HTML'
           args: --failOnCVSS 7.0 --enableRetired --enableExperimental
 
@@ -40,7 +40,7 @@ jobs:
         if: always()
         with:
           name: dependency-check-report
-          path: ${{github.workspace}}/reports
+          path: ./dependency-report
           retention-days: 5
 
       - name: Cache Maven packages
