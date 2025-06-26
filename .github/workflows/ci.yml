@@ -27,7 +27,7 @@ jobs:
       - name: Run OWASP Dependency Check
         run: |
           mkdir -p dependency-report
-          ./dependency-check/bin/dependency-check.sh \
+          ./dc/dependency-check/bin/dependency-check.sh \
             --project "microservice-user" \
             --scan . \
             --format HTML \
