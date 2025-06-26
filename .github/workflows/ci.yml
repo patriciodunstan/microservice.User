@@ -24,12 +24,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Download OWASP Dependency Check CLI
-        run: |
-          curl -L -o dc.zip https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.7/dependency-check-9.0.7-release.zip
-          unzip dc.zip
-          chmod +x dependency-check/bin/dependency-check.sh
-
       - name: Run OWASP Dependency Check
         run: |
           mkdir -p dependency-report
