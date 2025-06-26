@@ -30,29 +30,32 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      
-      - name: Run OWASP Dependency Check
-        run: |
-          mvn clean install -DskipTests
-          mvn org.owasp:dependency-check-maven:8.4.3:check \
-            -DfailBuildOnCVSS=9 \
-            -Dformat=HTML,JSON \
-            -DoutputDirectory=./target/security-reports
- 
-      - name: Upload OWASP report
-        uses: actions/upload-artifact@v4
-        if: always()
+    
+  dependency-check:
+    name: Dependency Check
+    runs-on: ubuntu-latest
+    needs: security-scan
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Depcheck Scan
+        uses: dependency-Check-Actions@main
+        id: Depcheck
         with:
-          name: owasp-security-report
-          path: |
-            target/security-reports/dependency-check-report.html
-            target/security-reports/dependency-check-report.json
-          retention-days: 5
-
+          project: 'microservice-user'
+          format: 'XML'
+          output: 'dependency-check-report.xml'
+          args: --failOnCVSS 7.0 --enableRetired
+      - name: Upload Test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: Depcheck Report
+          path: dependency-check-report.xml
+      
   test:
     name: Test and Build
     runs-on: ubuntu-latest
-    needs: security-scan
+    needs: [security-scan, dependency-check]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -122,6 +125,7 @@ jobs:
         with:
           name: trivy-security-report
           path: trivy-results.sarif
+
      
   notify:
     name: Notify
