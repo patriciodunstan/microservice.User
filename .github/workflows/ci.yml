@@ -37,12 +37,19 @@ jobs:
           out: './dependency-report'
           args: --failOnCVSS 7.0 --enableRetired --enableExperimental
 
-      - name: Debug Dependency Report Folder
+      - name: Download OWASP Dependency Check CLI
         run: |
-          echo "Contenido de ./dependency-report:"
-          ls -la ./dependency-report || echo "No existe el directorio"
-          echo "Contenido completo del workspace:"
-          find . -type f
+          curl -L -o dc.zip https://github.com/jeremylong/DependencyCheck/releases/download/v9.0.7/dependency-check-9.0.7-release.zip
+          unzip dc.zip -d dc
+          chmod +x dc/bin/dependency-check.sh
+
+      - name: Run OWASP Dependency Check
+        run: |
+          ./dc/bin/dependency-check.sh \
+            --project "microservice-user" \
+            --scan . \
+            --format HTML \
+            --out dependency-report
       
       - name: Verificar si se generó el reporte
         run: |
