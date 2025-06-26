@@ -36,13 +36,23 @@ jobs:
           format: 'HTML'
           out: './dependency-report'
           args: --failOnCVSS 7.0 --enableRetired --enableExperimental
+      
+      - name: Verificar si se generó el reporte
+        run: |
+          echo "Archivos en el directorio ./dependency-report:"
+          ls -l ./dependency-report
+          if [ ! -f ./dependency-report/dependency-check-report.html ]; then
+            echo "❌ No se generó el reporte de Dependency Check."
+            exit 1
+          fi
 
       - name: Upload Dependency Check Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: dependency-check-report
-          path: ./dependency-report
+          path: ${{ github.workspace }}/dependency-report
+          if-no-files-found: error
           retention-days: 5
 
       - name: Cache Maven packages
