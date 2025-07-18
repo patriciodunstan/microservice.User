@@ -2,7 +2,6 @@ package com.userREgisterLoginAuth.microservice.User.service;
 
 import com.userREgisterLoginAuth.microservice.User.dto.AuthResponseDto;
 import com.userREgisterLoginAuth.microservice.User.dto.LoginDto;
-import com.userREgisterLoginAuth.microservice.User.dto.UserInfoDto;
 import com.userREgisterLoginAuth.microservice.User.dto.UserRegistrationDto;
 import com.userREgisterLoginAuth.microservice.User.model.User;
 import com.userREgisterLoginAuth.microservice.User.repository.UserRepository;
