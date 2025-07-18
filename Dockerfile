@@ -1,52 +1,51 @@
-# Multi-stage build for security and optimization
+# === Build Stage ===
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy pom.xml first for better layer caching
+# Copiar primero el POM para aprovechar cache
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
-# Copy source code
+# Copiar el código fuente
 COPY src ./src
 
-# Build the application
+# Compilar el proyecto y generar el .jar (sin test, eso lo hace CI)
 RUN mvn clean package -DskipTests
 
-# Runtime stage
+# === Runtime Stage ===
 FROM eclipse-temurin:17-jre-alpine
 
-# Add security updates
-RUN apk update && apk upgrade && \
-    apk add --no-cache dumb-init && \
-    rm -rf /var/cache/apk/*
-
-# Create non-root user for security
+# Crear usuario no-root para seguridad
 RUN addgroup -g 1001 -S appgroup && \
     adduser -u 1001 -S appuser -G appgroup
 
-# Set working directory
+# Instalar utilidades necesarias
+RUN apk add --no-cache dumb-init curl
+
+# Directorio de trabajo
 WORKDIR /app
 
-# Copy the built jar from build stage
-COPY --from=build /app/target/microservice.User-0.0.1-SNAPSHOT.jar app.jar
-
-# Change ownership to non-root user
+# Copiar el .jar desde el build stage
+COPY --from=build /app/target/*.jar app.jar
 RUN chown appuser:appgroup app.jar
 
-# Switch to non-root user
+# Cambiar a usuario seguro
 USER appuser
 
-# Expose port
+# Exponer el puerto que usa la app
 EXPOSE 8080
 
-# Use dumb-init to handle signals properly
-ENTRYPOINT ["dumb-init", "--"]
+# Agregar metadata de imagen
+LABEL org.opencontainers.image.title="microservice-user" \
+      org.opencontainers.image.version="0.0.1-SNAPSHOT" \
+      org.opencontainers.image.authors="Patricio Dunstan" \
+      org.opencontainers.image.description="Java microservice backend"
 
-# Health check
+# Healthcheck dentro del contenedor
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/api/auth/health || exit 1
+  CMD curl -f http://localhost:8080/api/auth/health || exit 1
 
-# Start the application
-CMD ["java", "-jar", "app.jar"] 
+# Ejecutar la app usando dumb-init para manejo correcto de señales
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["java", "-jar", "app.jar"]
